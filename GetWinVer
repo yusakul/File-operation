@@ -1,0 +1,29 @@
+#include <stdio.h>
+#include <windows.h>
+
+typedef void(__stdcall* NTPROC)(DWORD*, DWORD*, DWORD*);
+
+void GetWinVer()
+{
+
+    const char* szStr = "ntdll.dll";
+    WCHAR wszClassName[256];
+    memset(wszClassName, 0, sizeof(wszClassName));
+    MultiByteToWideChar(CP_ACP, 0, szStr, strlen(szStr) + 1, wszClassName, sizeof(wszClassName) / sizeof(wszClassName[0]));
+
+
+    HINSTANCE hinst = LoadLibrary(wszClassName);
+    DWORD dwMajor, dwMinor, dwBuildNumber;
+    NTPROC proc = (NTPROC)GetProcAddress(hinst, "RtlGetNtVersionNumbers");
+    proc(&dwMajor, &dwMinor, &dwBuildNumber);
+    dwBuildNumber &= 0xffff;
+    printf("OS:%d.%d.%d\n", dwMajor, dwMinor, dwBuildNumber);
+    FreeLibrary(hinst);
+}
+
+int main(void)
+{
+    GetWinVer();
+    system("pause");
+    return 0;
+}
